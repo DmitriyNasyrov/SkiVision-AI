@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SkiVision AI</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Unbounded:wght@600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --brand: #0AFFD9;
+  --brand-dim: rgba(10,255,217,0.13);
+  --brand-glow: rgba(10,255,217,0.25);
+  --surface: #0A0E18;
+  --surface2: #111620;
+  --surface3: #182030;
+  --surface4: #1E2840;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #F0F2F6;
+  --text2: #8090A8;
+  --text3: #4A5568;
+  --green: #2ECC71;
+  --yellow: #F1C40F;
+  --red: #E74C3C;
+  --green-dim: rgba(46,204,113,0.14);
+  --yellow-dim: rgba(241,196,15,0.13);
+  --red-dim: rgba(231,76,60,0.14);
+  --nav-h: 64px;
+  --top-h: 56px;
+  --font-h: 'Unbounded', sans-serif;
+  --font: 'Manrope', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html { height: 100%; background: var(--surface); }
+body {
+  font-family: var(--font);
+  background: var(--surface);
+  color: var(--text);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── App shell ── */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  position: relative;
+}
+
+/* ── Top bar ── */
+.topbar {
+  height: var(--top-h);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-h);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.logo-icon {
+  width: 30px; height: 30px;
+  background: var(--brand-dim);
+  border: 1px solid rgba(10,255,217,0.28);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+}
+
+.top-actions { display: flex; gap: 6px; align-items: center; }
+
+.icon-btn {
+  width: 36px; height: 36px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 17px; cursor: pointer;
+  transition: all 0.15s;
+}
+.icon-btn:active { background: var(--surface4); transform: scale(0.94); }
+
+.notif-dot {
+  position: absolute;
+  top: 7px; right: 7px;
+  width: 6px; height: 6px;
+  background: var(--red);
+  border-radius: 50%;
+  border: 1px solid var(--surface2);
+}
+
+/* ── Page scroll area ── */
+.pages {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 14px calc(var(--nav-h) + 14px);
+  display: none;
+  animation: fadeIn 0.18s ease;
+}
+
+.page.active { display: block; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* scrollbar */
+.page::-webkit-scrollbar { width: 0; }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  color: var(--text3);
+  font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn i { font-size: 22px; transition: all 0.15s; }
+
+.nav-btn.active { color: var(--brand); }
+.nav-btn.active i { text-shadow: 0 0 12px var(--brand-glow); }
+
+.nav-btn:active { transform: scale(0.94); }
+
+.nav-active-bar {
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 28px; height: 2px;
+  background: var(--brand);
+  border-radius: 0 0 2px 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.nav-btn.active .nav-active-bar { opacity: 1; }
+
+.nav-badge {
+  position: absolute;
+  top: 8px; right: calc(50% - 20px);
+  background: var(--red);
+  color: #fff;
+  font-size: 8px; font-weight: 700;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--surface2);
+}
+
+/* ── Cards / common ── */
+.card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.card-label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text3);
+}
+
+.section-gap { margin-bottom: 12px; }
+
+.section-title {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+
+/* ── Athlete selector ── */
+.athlete-row {
+  display: flex; gap: 8px;
+  padding: 2px 0 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin-bottom: 14px;
+}
+.athlete-row::-webkit-scrollbar { display: none; }
+
+.athlete-chip {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px 8px 8px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.athlete-chip.selected {
+  background: var(--brand-dim);
+  border-color: rgba(10,255,217,0.3);
+}
+.athlete-chip:active { transform: scale(0.96); }
+
+.chip-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700; flex-shrink: 0;
+}
+
+.chip-name { font-size: 12px; font-weight: 600; color: var(--text); }
+.chip-rank { font-size: 10px; color: var(--text3); }
+
+/* ── Metrics grid ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.metric-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 13px;
+}
+
+.metric-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.metric-value { font-family: var(--font-mono); font-size: 24px; font-weight: 500; line-height: 1; }
+.metric-unit { font-size: 10px; color: var(--text3); margin-top: 3px; }
+.metric-delta { font-size: 10px; font-weight: 600; margin-top: 5px; display: flex; align-items: center; gap: 3px; }
+.delta-ok { color: var(--green); }
+.delta-warn { color: var(--yellow); }
+.delta-bad { color: var(--red); }
+
+/* ── Skeleton canvas ── */
+.skeleton-wrap {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.skeleton-top {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.phase-badge {
+  font-size: 9.5px; font-weight: 700;
+  padding: 3px 8px; border-radius: 5px;
+  background: var(--brand-dim); color: var(--brand);
+  border: 1px solid rgba(10,255,217,0.22);
+}
+
+canvas#skelCanvas { width: 100%; display: block; }
+
+.skeleton-controls {
+  padding: 10px 13px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.ctrl-btn {
+  width: 34px; height: 34px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); font-size: 15px; cursor: pointer; flex-shrink: 0;
+  transition: all 0.12s;
+}
+.ctrl-btn:active { background: var(--surface4); transform: scale(0.93); }
+.ctrl-btn.play-btn { background: var(--brand-dim); border-color: rgba(10,255,217,0.3); color: var(--brand); }
+
+.timeline {
+  flex: 1;
+  height: 4px;
+  background: var(--surface4);
+  border-radius: 2px;
+  position: relative;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.timeline-fill {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 2px;
+  position: relative;
+  pointer-events: none;
+}
+
+.timeline-thumb {
+  position: absolute;
+  right: -5px; top: -4px;
+  width: 12px; height: 12px;
+  background: var(--brand);
+  border-radius: 50%;
+  border: 2px solid var(--surface);
+  pointer-events: none;
+}
+
+.time-label { font-family: var(--font-mono); font-size: 10px; color: var(--text3); flex-shrink: 0; }
+
+/* legend dots */
+.legend-row { display: flex; gap: 12px; padding: 8px 13px 11px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: var(--text2); }
+.ldot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Errors list ── */
+.error-item {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.error-item:last-child { border-bottom: none; }
+.error-item:active { background: var(--surface3); }
+
+.error-top { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 5px; }
+
+.edot {
+  width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0;
+}
+.edot.red { background: var(--red); box-shadow: 0 0 6px rgba(231,76,60,.45); }
+.edot.yellow { background: var(--yellow); box-shadow: 0 0 6px rgba(241,196,15,.35); }
+.edot.green { background: var(--green); box-shadow: 0 0 6px rgba(46,204,.45); }
+.edot.green { background: var(--green); box-shadow: 0 0 6px rgba(46,204,113,.4); }
+
+.error-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; }
+.error-text { font-size: 11.5px; color: var(--text2); line-height: 1.5; padding-left: 17px; }
+
+.chips-row { display: flex; gap: 6px; padding-left: 17px; margin-top: 7px; flex-wrap: wrap; }
+.chip {
+  font-family: var(--font-mono); font-size: 10px;
+  padding: 2px 8px; border-radius: 4px; font-weight: 500;
+}
+.chip.bad { background: var(--red-dim); color: var(--red); }
+.chip.warn { background: var(--yellow-dim); color: var(--yellow); }
+.chip.ok { background: var(--green-dim); color: var(--green); }
+.chip.ref { background: var(--surface3); color: var(--text3); }
+
+/* ── Phase bars ── */
+.phase-section { padding: 13px; }
+
+.phase-row { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; }
+.phase-name { font-size: 11px; color: var(--text2); width: 110px; flex-shrink: 0; text-align: right; font-weight: 500; }
+.phase-track { flex: 1; height: 20px; background: var(--surface3); border-radius: 5px; overflow: hidden; }
+.phase-seg { height: 100%; border-radius: 5px; }
+.phase-pct { font-family: var(--font-mono); font-size: 10px; color: var(--text3); width: 30px; text-align: right; flex-shrink: 0; }
+
+/* ── Upload page ── */
+.field-label {
+  font-size: 10.5px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.field-input {
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  padding: 11px 13px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  width: 100%;
+  font-weight: 500;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+.field-input:focus { outline: none; border-color: var(--brand); }
+
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-group { margin-bottom: 10px; }
+
+.upload-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: 12px;
+  padding: 22px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface2);
+  display: block;
+}
+.upload-zone:active { transform: scale(0.98); }
+.upload-zone.has-file { border-color: var(--green); border-style: solid; background: var(--green-dim); }
+.upload-zone .upload-icon { font-size: 32px; color: var(--text3); margin-bottom: 7px; transition: color 0.2s; }
+.upload-zone.has-file .upload-icon { color: var(--green); }
+.upload-zone .upload-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.upload-zone .upload-sub { font-size: 11px; color: var(--text3); }
+
+input[type=file] { display: none; }
+
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+.btn-full {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px;
+  border-radius: 12px;
+  font-size: 14px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; border: none; transition: all 0.15s;
+  letter-spacing: 0.2px;
+}
+.btn-full:active { transform: scale(0.98); opacity: 0.9; }
+
+.btn-primary { background: var(--brand); color: #000; }
+.btn-ghost { background: var(--surface3); color: var(--text2); border: 1px solid var(--border); }
+.btn-ghost:active { background: var(--surface4); }
+
+/* ── Progress steps ── */
+.step-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px; margin-bottom: 8px;
+}
+.step-row.done { background: var(--green-dim); }
+.step-row.running { background: var(--brand-dim); border: 1px solid rgba(10,255,217,0.18); }
+.step-row.pending { opacity: 0.38; }
+
+.step-icon { font-size: 18px; }
+.step-row.done .step-icon { color: var(--green); }
+.step-row.running .step-icon { color: var(--brand); }
+
+.step-info { flex: 1; }
+.step-name { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.step-sub { font-size: 10.5px; color: var(--text2); margin-top: 1px; }
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(10,255,217,0.18);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.progress-track { background: var(--surface3); border-radius: 3px; height: 4px; overflow: hidden; margin: 10px 0 5px; }
+.progress-fill { height: 100%; background: var(--brand); border-radius: 3px; transition: width 0.4s ease; }
+
+/* ── Charts page ── */
+.chart-tabs { display: flex; overflow-x: auto; gap: 0; border-bottom: 1px solid var(--border); padding: 0 2px; scrollbar-width: none; }
+.chart-tabs::-webkit-scrollbar { display: none; }
+
+.ctab {
+  flex-shrink: 0;
+  padding: 10px 15px;
+  font-size: 11.5px; font-weight: 600;
+  color: var(--text3); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s; white-space: nowrap;
+}
+.ctab.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+.chart-panel { padding: 14px; display: none; }
+.chart-panel.active { display: block; }
+
+/* ── Compare page ── */
+.compare-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 13px;
+  background: var(--surface3); border-radius: 9px; margin-bottom: 7px;
+}
+.cmp-name { flex: 1; font-size: 12px; font-weight: 600; color: var(--text2); }
+.cmp-val { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+.cmp-arrow { color: var(--text3); font-size: 11px; }
+.cmp-ref { font-family: var(--font-mono); font-size: 10px; color: var(--text3); }
+
+/* ── Tip box ── */
+.tip-box {
+  background: var(--surface3);
+  border-left: 3px solid var(--yellow);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 12px;
+  font-size: 11.5px; color: var(--text2);
+  line-height: 1.5;
+  margin-top: 12px;
+}
+
+/* ── Summary bar (top of report) ── */
+.summary-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.summary-score {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: conic-gradient(var(--yellow) 0deg 216deg, var(--surface4) 216deg);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.score-inner {
+  position: absolute; inset: 4px;
+  background: var(--surface2);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--yellow);
+}
+
+.summary-text { flex: 1; }
+.summary-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.summary-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+.summary-status {
+  font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 6px;
+  background: var(--yellow-dim); color: var(--yellow);
+  text-transform: uppercase; letter-spacing: 0.4px; flex-shrink: 0;
+}
+
+/* ── Quick actions ── */
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+
+.quick-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 13px 13px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; gap: 10px;
+}
+.quick-btn:active { background: var(--surface3); transform: scale(0.97); }
+.quick-btn i { font-size: 20px; color: var(--brand); }
+.quick-btn-text .qb-title { font-size: 12px; font-weight: 700; color: var(--text); }
+.quick-btn-text .qb-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+/* ── Calibration info ── */
+.calib-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 13px;
+  background: var(--surface3); border-radius: 10px;
+  margin-bottom: 10px;
+}
+.calib-icon { font-size: 22px; color: var(--text3); flex-shrink: 0; }
+.calib-text .ct-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.calib-text .ct-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.calib-val { font-family: var(--font-mono); font-size: 13px; color: var(--brand); font-weight: 500; flex-shrink: 0; }
+
+/* ── Swipeable tabs inside page ── */
+.inner-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+.itab {
+  flex: 1; text-align: center;
+  padding: 10px 6px;
+  font-size: 11px; font-weight: 600; color: var(--text3);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.itab.active { color: var(--brand); border-bottom-color: var(--brand); }
+
+/* ── Range date pickers ── */
+.date-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.date-row select { flex: 1; }
+.date-vs { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 12px);
+  left: 50%; transform: translateX(-50%);
+  background: var(--surface4);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 9px 18px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* ── Floating upload btn ── */
+.fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--nav-h) + 14px);
+  width: 50px; height: 50px;
+  background: var(--brand);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: #000;
+  box-shadow: 0 4px 18px rgba(10,255,217,0.3);
+  z-index: 50; cursor: pointer;
+  transition: all 0.15s;
+}
+.fab:active { transform: scale(0.93); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">⛷</div>
+      SkiVision AI
+    </div>
+    <div class="top-actions">
+      <div class="icon-btn" onclick="showToast('Уведомления')">
+        <i class="ti ti-bell"></i>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="icon-btn" onclick="showToast('Профиль')">
+        <i class="ti ti-user-circle"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <div class="pages">
+
+    <!-- ══════════ PAGE: REPORT ══════════ -->
+    <div class="page active" id="page-report">
+
+      <!-- Athlete selector -->
+      <div class="athlete-row">
+        <div class="athlete-chip selected" onclick="selectAthlete(this,'Громов А.В.','МС')">
+          <div class="chip-avatar" style="background:rgba(10,255,217,0.15);color:#0AFFD9">АГ</div>
+          <div><div class="chip-name">Громов А.В.</div><div class="chip-rank">МС</div></div>
+        </div>
+        <div class="athlete-chip" onclick="selectAthlete(this,'Ковалёва Е.С.','КМС')">
+          <div class="chip-avatar" style="background:rgba(231,76,60,0.15);color:#E74C3C">ЕК</div>
+          <div><div class="chip-name">Ковалёва Е.С.</div><div class="chip-rank">КМС</div></div>
+        </div>
+        <div class="athlete-chip" onclick="selectAthlete(this,'Зайцев П.О.','1р')">
+          <div class="chip-avatar" style="background:rgba(241,196,15,0.15);color:#F1C40F">ПЗ</div>
+          <div><div class="chip-name">Зайцев П.О.</div><div class="chip-rank">1р</div></div>
+        </div>
+        <div class="athlete-chip" onclick="goPage('upload')">
+          <div class="chip-avatar" style="background:var(--surface3);color:var(--text3)"><i class="ti ti-plus" style="font-size:12px"></i></div>
+          <div><div class="chip-name" style="color:var(--text3)">Добавить</div></div>
+        </div>
+      </div>
+
+      <!-- Summary bar -->
+      <div class="summary-bar">
+        <div class="summary-score">
+          <div class="score-inner">60</div>
+        </div>
+        <div class="summary-text">
+          <div class="summary-name" id="athleteName">Громов А.В.</div>
+          <div class="summary-meta">24.05.2025 · Классический ход</div>
+        </div>
+        <div class="summary-status">60/100</div>
+      </div>
+
+      <!-- Metrics 2×2 -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Колено правое</div>
+          <div class="metric-value" style="color:var(--yellow)">145°</div>
+          <div class="metric-unit">Норма 130–140°</div>
+          <div class="metric-delta delta-warn"><i class="ti ti-arrow-up" style="font-size:10px"></i>+5°</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Наклон корпуса</div>
+          <div class="metric-value" style="color:var(--red)">22°</div>
+          <div class="metric-unit">Норма 30–35°</div>
+          <div class="metric-delta delta-bad"><i class="ti ti-arrow-down" style="font-size:10px"></i>−10°</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Длина шага</div>
+          <div class="metric-value" style="color:var(--green)">1.84 м</div>
+          <div class="metric-unit">Норма 1.7–2.0</div>
+          <div class="metric-delta delta-ok"><i class="ti ti-check" style="font-size:10px"></i>Норма</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Частота шагов</div>
+          <div class="metric-value" style="color:var(--green)">76</div>
+          <div class="metric-unit">шаг/мин</div>
+          <div class="metric-delta delta-ok"><i class="ti ti-check" style="font-size:10px"></i>Норма</div>
+        </div>
+      </div>
+
+      <!-- Skeleton canvas -->
+      <div class="skeleton-wrap section-gap">
+        <div class="skeleton-top">
+          <span class="card-label">Скелет · Боковой</span>
+          <span class="phase-badge" id="phaseBadge">скольжение</span>
+        </div>
+        <canvas id="skelCanvas" height="240"></canvas>
+        <div class="legend-row">
+          <div class="legend-item"><div class="ldot" style="background:var(--green)"></div>Норма</div>
+          <div class="legend-item"><div class="ldot" style="background:var(--yellow)"></div>Отклонение</div>
+          <div class="legend-item"><div class="ldot" style="background:var(--red)"></div>Ошибка</div>
+        </div>
+        <div class="skeleton-controls">
+          <div class="ctrl-btn" onclick="prevFrame()"><i class="ti ti-chevron-left"></i></div>
+          <div class="ctrl-btn play-btn" id="playBtn" onclick="togglePlay()"><i class="ti ti-player-play"></i></div>
+          <div class="ctrl-btn" onclick="nextFrame()"><i class="ti ti-chevron-right"></i></div>
+          <div class="timeline" id="timeline" ontouchstart="timelineTouch(event)" ontouchmove="timelineTouch(event)">
+            <div class="timeline-fill" id="tFill" style="width:42%">
+              <div class="timeline-thumb"></div>
+            </div>
+          </div>
+          <div class="time-label" id="tLabel">2.1с</div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="section-title">Быстрые действия</div>
+      <div class="quick-actions section-gap">
+        <div class="quick-btn" onclick="goPage('errors')">
+          <i class="ti ti-alert-triangle"></i>
+          <div class="quick-btn-text">
+            <div class="qb-title">Ошибки</div>
+            <div class="qb-sub">3 выявлено</div>
+          </div>
+        </div>
+        <div class="quick-btn" onclick="goPage('charts')">
+          <i class="ti ti-chart-dots-3"></i>
+          <div class="quick-btn-text">
+            <div class="qb-title">Графики</div>
+            <div class="qb-sub">Углы, шаги</div>
+          </div>
+        </div>
+        <div class="quick-btn" onclick="showToast('PDF сохранён')">
+          <i class="ti ti-download"></i>
+          <div class="quick-btn-text">
+            <div class="qb-title">Экспорт</div>
+            <div class="qb-sub">PDF отчёт</div>
+          </div>
+        </div>
+        <div class="quick-btn" onclick="showToast('Ссылка скопирована')">
+          <i class="ti ti-send"></i>
+          <div class="quick-btn-text">
+            <div class="qb-title">Отправить</div>
+            <div class="qb-sub">Спортсмену</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase distribution -->
+      <div class="card section-gap">
+        <div class="card-header">
+          <span class="card-label">Фазы движения</span>
+        </div>
+        <div class="phase-section">
+          <div class="phase-row">
+            <div class="phase-name">Скольжение л.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:38%;background:rgba(10,255,217,0.6)"></div></div>
+            <div class="phase-pct">38%</div>
+          </div>
+          <div class="phase-row">
+            <div class="phase-name">Отталкивание л.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:18%;background:rgba(231,76,60,0.65)"></div></div>
+            <div class="phase-pct">18%</div>
+          </div>
+          <div class="phase-row">
+            <div class="phase-name">Скольжение п.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:32%;background:rgba(10,255,217,0.38)"></div></div>
+            <div class="phase-pct">32%</div>
+          </div>
+          <div class="phase-row">
+            <div class="phase-name">Отталкивание п.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:12%;background:rgba(241,196,15,0.65)"></div></div>
+            <div class="phase-pct">12%</div>
+          </div>
+          <div class="tip-box">💡 Фаза отталкивания правой ноги короче нормы на <strong style="color:var(--yellow)">6%</strong> — добавьте усилие в момент отрыва от лыжни.</div>
+        </div>
+      </div>
+
+    </div><!-- /report -->
+
+
+    <!-- ══════════ PAGE: UPLOAD ══════════ -->
+    <div class="page" id="page-upload">
+      <div class="section-title">Антропометрия</div>
+      <div class="card section-gap">
+        <div style="padding:14px">
+          <div class="form-2col">
+            <div>
+              <div class="field-label">Рост</div>
+              <input class="field-input" type="number" value="178" inputmode="numeric">
+            </div>
+            <div>
+              <div class="field-label">Бедро</div>
+              <input class="field-input" type="number" value="44" inputmode="numeric">
+            </div>
+            <div>
+              <div class="field-label">Голень</div>
+              <input class="field-input" type="number" value="41" inputmode="numeric">
+            </div>
+            <div>
+              <div class="field-label">Плечо</div>
+              <input class="field-input" type="number" value="32" inputmode="numeric">
+            </div>
+            <div>
+              <div class="field-label">Предплечье</div>
+              <input class="field-input" type="number" value="27" inputmode="numeric">
+            </div>
+            <div>
+              <div class="field-label">Ход</div>
+              <select class="field-input">
+                <option>Классический</option>
+                <option>Коньковый</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Видео с двух ракурсов</div>
+      <div class="upload-grid section-gap">
+        <label for="vFront">
+          <div class="upload-zone" id="frontZ">
+            <div class="upload-icon"><i class="ti ti-video"></i></div>
+            <div class="upload-title">Спереди</div>
+            <div class="upload-sub">60fps · 1080p</div>
+          </div>
+        </label>
+        <input type="file" id="vFront" accept="video/*" onchange="fileUp('frontZ',this)">
+
+        <label for="vSide">
+          <div class="upload-zone" id="sideZ">
+            <div class="upload-icon"><i class="ti ti-video"></i></div>
+            <div class="upload-title">Сбоку</div>
+            <div class="upload-sub">60fps · 1080p</div>
+          </div>
+        </label>
+        <input type="file" id="vSide" accept="video/*" onchange="fileUp('sideZ',this)">
+      </div>
+
+      <div class="section-title">Калибровочный маркер</div>
+      <div class="calib-row section-gap">
+        <i class="ti ti-grid calib-icon"></i>
+        <div class="calib-text">
+          <div class="ct-title">Шахматная доска 5×5</div>
+          <div class="ct-sub">Положите на снег рядом с лыжнёй</div>
+        </div>
+        <div class="calib-val">5.0 см</div>
+      </div>
+
+      <button class="btn-full btn-primary" onclick="startAnalysis()" style="margin-bottom:8px">
+        <i class="ti ti-player-play"></i> Запустить анализ
+      </button>
+      <button class="btn-full btn-ghost" onclick="showToast('Черновик сохранён')">
+        <i class="ti ti-device-floppy"></i> Сохранить черновик
+      </button>
+
+      <div id="analysisBlock" style="display:none;margin-top:14px">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-label">Обработка</span>
+            <span id="pctLabel" style="font-family:var(--font-mono);font-size:11px;color:var(--brand)">23%</span>
+          </div>
+          <div style="padding:14px">
+            <div class="progress-track">
+              <div class="progress-fill" id="progFill" style="width:23%"></div>
+            </div>
+            <div id="stepsList" style="margin-top:12px"></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /upload -->
+
+
+    <!-- ══════════ PAGE: ERRORS ══════════ -->
+    <div class="page" id="page-errors">
+      <div class="section-title">Ошибки и рекомендации</div>
+      <div class="card section-gap">
+        <div class="error-item">
+          <div class="error-top">
+            <div class="edot red"></div>
+            <div class="error-title">Недостаточный наклон туловища</div>
+          </div>
+          <div class="error-text">Угол 22° (норма 30–35°). Наклоните корпус вперёд для лучшего переноса веса.</div>
+          <div class="chips-row">
+            <span class="chip bad">22°</span>
+            <span style="font-size:10px;color:var(--text3)">→ норма</span>
+            <span class="chip ref">30–35°</span>
+          </div>
+        </div>
+        <div class="error-item">
+          <div class="error-top">
+            <div class="edot yellow"></div>
+            <div class="error-title">Угол правого колена завышен</div>
+          </div>
+          <div class="error-text">145° при норме 130–140°. Увеличьте сгибание в фазе толчка.</div>
+          <div class="chips-row">
+            <span class="chip warn">145°</span>
+            <span style="font-size:10px;color:var(--text3)">→ норма</span>
+            <span class="chip ref">130–140°</span>
+          </div>
+        </div>
+        <div class="error-item">
+          <div class="error-top">
+            <div class="edot yellow"></div>
+            <div class="error-title">Асимметрия переноса рук</div>
+          </div>
+          <div class="error-text">Левая рука отстаёт на 0.08 с. Синхронизируйте движение с шагом.</div>
+          <div class="chips-row">
+            <span class="chip warn">Δ 0.08 с</span>
+          </div>
+        </div>
+        <div class="error-item">
+          <div class="error-top">
+            <div class="edot green"></div>
+            <div class="error-title">Длина и частота шага — норма</div>
+          </div>
+          <div class="error-text">1.84 м и 76 ш/мин — оба параметра в пределах эталона. Так держать!</div>
+          <div class="chips-row">
+            <span class="chip ok">1.84 м</span>
+            <span class="chip ok">76 ш/мин</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-full btn-ghost" onclick="showToast('Рекомендации скопированы')">
+        <i class="ti ti-copy"></i> Скопировать рекомендации
+      </button>
+    </div><!-- /errors -->
+
+
+    <!-- ══════════ PAGE: CHARTS ══════════ -->
+    <div class="page" id="page-charts">
+      <div class="card section-gap" style="overflow:visible">
+        <div class="inner-tabs">
+          <div class="itab active" onclick="showChartTab('angles',this)">Углы</div>
+          <div class="itab" onclick="showChartTab('steps',this)">Шаги</div>
+          <div class="itab" onclick="showChartTab('freq',this)">Частота</div>
+          <div class="itab" onclick="showChartTab('phases',this)">Фазы</div>
+        </div>
+
+        <div class="chart-panel active" id="ctAngles">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Динамика углов в суставах</div>
+          <div style="position:relative;height:200px"><canvas id="mAngleChart"></canvas></div>
+          <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#0AFFD9;display:inline-block;border-radius:1px"></span>Колено пр.</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#E74C3C;display:inline-block;border-radius:1px"></span>Колено л.</span>
+            <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:2px;background:#F1C40F;display:inline-block;border-radius:1px"></span>Туловище</span>
+          </div>
+        </div>
+
+        <div class="chart-panel" id="ctSteps">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Длина шага</div>
+          <div style="position:relative;height:200px"><canvas id="mStepChart"></canvas></div>
+        </div>
+
+        <div class="chart-panel" id="ctFreq">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Частота шагов (шаг/мин)</div>
+          <div style="position:relative;height:200px"><canvas id="mFreqChart"></canvas></div>
+        </div>
+
+        <div class="chart-panel" id="ctPhases">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px">Доли фаз</div>
+          <div class="phase-row">
+            <div class="phase-name">Скольжение л.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:38%;background:rgba(10,255,217,0.6)"></div></div>
+            <div class="phase-pct">38%</div>
+          </div>
+          <div class="phase-row">
+            <div class="phase-name">Отталк. л.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:18%;background:rgba(231,76,60,0.65)"></div></div>
+            <div class="phase-pct">18%</div>
+          </div>
+          <div class="phase-row">
+            <div class="phase-name">Скольжение п.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:32%;background:rgba(10,255,217,0.38)"></div></div>
+            <div class="phase-pct">32%</div>
+          </div>
+          <div class="phase-row">
+            <div class="phase-name">Отталк. п.</div>
+            <div class="phase-track"><div class="phase-seg" style="width:12%;background:rgba(241,196,15,0.65)"></div></div>
+            <div class="phase-pct">12%</div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /charts -->
+
+
+    <!-- ══════════ PAGE: COMPARE ══════════ -->
+    <div class="page" id="page-compare">
+      <div class="section-title">Сравнение сессий</div>
+      <div class="card section-gap">
+        <div style="padding:14px">
+          <div class="date-row">
+            <select class="field-input">
+              <option>24.05.2025</option>
+              <option>15.04.2025</option>
+              <option>01.03.2025</option>
+            </select>
+            <div class="date-vs">vs</div>
+            <select class="field-input">
+              <option>15.04.2025</option>
+              <option>01.03.2025</option>
+              <option>10.02.2025</option>
+            </select>
+          </div>
+          <button class="btn-full btn-ghost" style="margin-bottom:0" onclick="showToast('Сравнение обновлено')">
+            <i class="ti ti-refresh"></i> Обновить
+          </button>
+        </div>
+      </div>
+
+      <div class="section-title">Изменения параметров</div>
+      <div class="compare-row">
+        <div class="cmp-name">Наклон корпуса</div>
+        <div class="cmp-val" style="color:var(--red)">22°</div>
+        <div class="cmp-arrow">→</div>
+        <div class="cmp-val" style="color:var(--yellow)">26°</div>
+        <div class="cmp-ref" style="margin-left:auto">30–35°</div>
+      </div>
+      <div class="compare-row">
+        <div class="cmp-name">Колено правое</div>
+        <div class="cmp-val" style="color:var(--yellow)">145°</div>
+        <div class="cmp-arrow">→</div>
+        <div class="cmp-val" style="color:var(--yellow)">148°</div>
+        <div class="cmp-ref" style="margin-left:auto">130–140°</div>
+      </div>
+      <div class="compare-row">
+        <div class="cmp-name">Длина шага</div>
+        <div class="cmp-val" style="color:var(--green)">1.84 м</div>
+        <div class="cmp-arrow">→</div>
+        <div class="cmp-val" style="color:var(--green)">1.76 м</div>
+        <div class="cmp-ref" style="margin-left:auto">1.7–2.0</div>
+      </div>
+      <div class="compare-row" style="margin-bottom:14px">
+        <div class="cmp-name">Частота</div>
+        <div class="cmp-val" style="color:var(--green)">76</div>
+        <div class="cmp-arrow">→</div>
+        <div class="cmp-val" style="color:var(--green)">72</div>
+        <div class="cmp-ref" style="margin-left:auto">70–85</div>
+      </div>
+
+      <div class="section-title">График сравнения</div>
+      <div class="card">
+        <div style="padding:14px">
+          <div style="position:relative;height:200px">
+            <canvas id="mCompareChart"></canvas>
+          </div>
+          <div style="display:flex;gap:14px;margin-top:10px;font-size:11px">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:rgba(10,255,217,0.6);border-radius:2px;display:inline-block"></span>24.05</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;background:rgba(55,138,221,0.55);border-radius:2px;display:inline-block"></span>15.04</span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /compare -->
+
+  </div><!-- /pages -->
+
+  <!-- Bottom nav -->
+  <div class="bottom-nav">
+    <div class="nav-btn active" id="nav-report" onclick="goPage('report')">
+      <div class="nav-active-bar"></div>
+      <i class="ti ti-activity"></i>
+      Отчёт
+    </div>
+    <div class="nav-btn" id="nav-upload" onclick="goPage('upload')">
+      <div class="nav-active-bar"></div>
+      <i class="ti ti-upload"></i>
+      Анализ
+    </div>
+    <div class="nav-btn" id="nav-errors" onclick="goPage('errors')">
+      <div class="nav-active-bar"></div>
+      <i class="ti ti-alert-triangle"></i>
+      Ошибки
+      <div class="nav-badge">3</div>
+    </div>
+    <div class="nav-btn" id="nav-charts" onclick="goPage('charts')">
+      <div class="nav-active-bar"></div>
+      <i class="ti ti-chart-dots"></i>
+      Графики
+    </div>
+    <div class="nav-btn" id="nav-compare" onclick="goPage('compare')">
+      <div class="nav-active-bar"></div>
+      <i class="ti ti-git-compare"></i>
+      Прогресс
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ── Navigation ──
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+
+  if (id === 'charts') initCharts();
+  if (id === 'compare') initCompare();
+}
+
+function selectAthlete(el, name, rank) {
+  document.querySelectorAll('.athlete-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('athleteName').textContent = name;
+}
+
+// ── Toast ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ── Skeleton ──
+const skelCanvas = document.getElementById('skelCanvas');
+const sCtx = skelCanvas.getContext('2d');
+let fp = 0.42, playing = false, playInt = null;
+const phaseNames = ['скольжение', 'отталк. л.', 'скольжение', 'отталк. п.', 'перенос'];
+
+function initSkelCanvas() {
+  skelCanvas.width = skelCanvas.parentElement.clientWidth;
+  skelCanvas.height = 240;
+}
+
+function drawSkel(t) {
+  initSkelCanvas();
+  const w = skelCanvas.width, h = skelCanvas.height;
+  sCtx.clearRect(0, 0, w, h);
+
+  sCtx.strokeStyle = 'rgba(255,255,255,0.04)';
+  sCtx.lineWidth = 0.5;
+  for (let x = 0; x < w; x += 36) { sCtx.beginPath(); sCtx.moveTo(x, 0); sCtx.lineTo(x, h); sCtx.stroke(); }
+  for (let y = 0; y < h; y += 36) { sCtx.beginPath(); sCtx.moveTo(0, y); sCtx.lineTo(w, y); sCtx.stroke(); }
+
+  const cx = w * 0.42;
+  const kA = 145 + Math.sin(t * Math.PI * 2) * 8;
+  const tA = 22 + Math.sin(t * Math.PI * 2 + 0.5) * 3;
+  const lP = Math.sin(t * Math.PI * 2);
+  const aP = Math.sin(t * Math.PI * 2 + Math.PI);
+
+  const hip = { x: cx, y: h * 0.42 };
+  const top = { x: cx - Math.sin(tA * Math.PI / 180) * 55, y: hip.y - Math.cos(tA * Math.PI / 180) * 55 };
+  const hd = { x: top.x - Math.sin(tA * Math.PI / 180) * 16, y: top.y - 16 };
+  const kR = { x: hip.x + lP * 14 + 9, y: hip.y + 50 };
+  const aR = { x: kR.x + 5, y: kR.y + 46 };
+  const kL = { x: hip.x - lP * 14 - 9, y: hip.y + 50 };
+  const aL = { x: kL.x - 5, y: kL.y + 46 };
+  const shR = { x: top.x + 11, y: top.y + 8 };
+  const shL = { x: top.x - 11, y: top.y + 8 };
+  const elR = { x: shR.x + aP * 17 + 9, y: shR.y + 28 };
+  const elL = { x: shL.x - aP * 17 - 9, y: shL.y + 28 };
+  const wR = { x: elR.x + 9, y: elR.y + 20 };
+  const wL = { x: elL.x - 9, y: elL.y + 20 };
+
+  function bone(a, b, c, lw) {
+    sCtx.beginPath(); sCtx.moveTo(a.x, a.y); sCtx.lineTo(b.x, b.y);
+    sCtx.strokeStyle = c; sCtx.lineWidth = lw || 3; sCtx.lineCap = 'round'; sCtx.stroke();
+  }
+  function jnt(p, c, r) {
+    sCtx.beginPath(); sCtx.arc(p.x, p.y, r || 5, 0, Math.PI * 2);
+    sCtx.fillStyle = c; sCtx.fill();
+    sCtx.strokeStyle = 'rgba(0,0,0,0.4)'; sCtx.lineWidth = 1; sCtx.stroke();
+  }
+
+  bone(hip, top, '#E74C3C', 3.5);
+  bone(hip, kR, '#F1C40F', 3); bone(kR, aR, '#F1C40F', 2.5);
+  bone(hip, kL, '#2ECC71', 3); bone(kL, aL, '#2ECC71', 2.5);
+  bone(shR, elR, '#2ECC71', 2.5); bone(elR, wR, '#2ECC71', 2);
+  bone(shL, elL, '#F1C40F', 2.5); bone(elL, wL, '#F1C40F', 2);
+
+  jnt(hip, '#fff', 5); jnt(top, '#fff', 4.5); jnt(hd, '#ddd', 9);
+  jnt(kR, '#F1C40F', 5.5); jnt(aR, '#F1C40F', 4);
+  jnt(kL, '#2ECC71', 5.5); jnt(aL, '#2ECC71', 4);
+  jnt(shR, '#2ECC71', 4); jnt(shL, '#F1C40F', 4);
+  jnt(elR, '#2ECC71', 3.5); jnt(elL, '#F1C40F', 3.5);
+
+  sCtx.font = 'bold 10px "JetBrains Mono", monospace';
+  sCtx.fillStyle = '#F1C40F';
+  sCtx.fillText(Math.round(kA) + '°', kR.x + 9, kR.y - 3);
+  sCtx.fillStyle = '#E74C3C';
+  sCtx.fillText(Math.round(tA) + '°', top.x + 11, (hip.y + top.y) / 2);
+
+  sCtx.beginPath(); sCtx.moveTo(0, h - 16); sCtx.lineTo(w, h - 16);
+  sCtx.strokeStyle = 'rgba(255,255,255,0.08)'; sCtx.lineWidth = 1;
+  sCtx.setLineDash([7, 7]); sCtx.stroke(); sCtx.setLineDash([]);
+
+  const ph = Math.floor(t * phaseNames.length) % phaseNames.length;
+  document.getElementById('phaseBadge').textContent = phaseNames[ph];
+}
+
+function updateSkel(p) {
+  fp = p;
+  document.getElementById('tFill').style.width = (p * 100) + '%';
+  document.getElementById('tLabel').textContent = (p * 5).toFixed(1) + 'с';
+  drawSkel(p);
+}
+
+function togglePlay() {
+  playing = !playing;
+  document.getElementById('playBtn').innerHTML = playing
+    ? '<i class="ti ti-player-pause"></i>'
+    : '<i class="ti ti-player-play"></i>';
+  if (playing) {
+    playInt = setInterval(() => { fp += 0.005; if (fp > 1) fp = 0; updateSkel(fp); }, 40);
+  } else {
+    clearInterval(playInt);
+  }
+}
+
+function prevFrame() { updateSkel(Math.max(0, fp - 0.02)); }
+function nextFrame() { updateSkel(Math.min(1, fp + 0.02)); }
+
+function timelineTouch(e) {
+  e.preventDefault();
+  const tl = document.getElementById('timeline');
+  const rect = tl.getBoundingClientRect();
+  const touch = e.touches[0];
+  const p = Math.min(1, Math.max(0, (touch.clientX - rect.left) / rect.width));
+  updateSkel(p);
+}
+
+// ── Upload ──
+function fileUp(zoneId, input) {
+  if (!input.files.length) return;
+  const zone = document.getElementById(zoneId);
+  zone.classList.add('has-file');
+  zone.querySelector('.upload-title').textContent = 'Загружено';
+  zone.querySelector('.upload-sub').textContent = input.files[0].name.substring(0, 16) + '…';
+}
+
+// ── Analysis simulation ──
+let aStep = 0;
+function startAnalysis() {
+  document.getElementById('analysisBlock').style.display = 'block';
+  document.getElementById('analysisBlock').scrollIntoView({ behavior: 'smooth' });
+  aStep = 0;
+  renderSteps();
+  runAStep();
+}
+
+const stepDefs = [
+  { icon: 'ti-robot', name: 'Детекция скелета', sub: 'MediaPipe · 1800 кадров' },
+  { icon: 'ti-ruler', name: 'Калибровка', sub: '1px = 0.54 мм' },
+  { icon: 'ti-math', name: 'Биомеханика', sub: '7 параметров' },
+  { icon: 'ti-git-compare', name: 'Сравнение с эталоном', sub: 'Рост 176–180 см' }
+];
+const pcts = [23, 55, 76, 92, 100];
+
+function renderSteps() {
+  const list = document.getElementById('stepsList');
+  list.innerHTML = stepDefs.map((s, i) => `
+    <div class="step-row pending" id="ms${i}">
+      <div class="step-icon"><i class="ti ${s.icon}"></i></div>
+      <div class="step-info"><div class="step-name">${s.name}</div><div class="step-sub">${s.sub}</div></div>
+    </div>`).join('');
+}
+
+function runAStep() {
+  if (aStep > 0) {
+    const prev = document.getElementById('ms' + (aStep - 1));
+    prev.className = 'step-row done';
+    prev.querySelector('.step-icon').innerHTML = '<i class="ti ti-check"></i>';
+  }
+  if (aStep < stepDefs.length) {
+    const el = document.getElementById('ms' + aStep);
+    el.className = 'step-row running';
+    el.innerHTML = `<div class="step-icon"><i class="ti ${stepDefs[aStep].icon}"></i></div><div class="step-info"><div class="step-name">${stepDefs[aStep].name}</div><div class="step-sub">Выполняется...</div></div><div class="spinner"></div>`;
+    document.getElementById('progFill').style.width = pcts[aStep] + '%';
+    document.getElementById('pctLabel').textContent = pcts[aStep] + '%';
+    aStep++;
+    setTimeout(runAStep, 1700);
+  } else {
+    document.getElementById('progFill').style.width = '100%';
+    document.getElementById('pctLabel').textContent = '100%';
+    setTimeout(() => { goPage('report'); showToast('Анализ завершён!'); }, 600);
+  }
+}
+
+// ── Charts ──
+let chartsInited = false;
+
+function showChartTab(id, el) {
+  document.querySelectorAll('.itab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.chart-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('ct' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+}
+
+function initCharts() {
+  if (chartsInited) return;
+  chartsInited = true;
+  const chartOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: '#4A5568', font: { size: 8 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+      y: { ticks: { color: '#4A5568', font: { size: 8 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+    }
+  };
+  const times = Array.from({ length: 30 }, (_, i) => (i * 5 / 30).toFixed(1));
+  new Chart(document.getElementById('mAngleChart'), {
+    type: 'line',
+    data: { labels: times, datasets: [
+      { data: times.map((_, i) => 140 + 9 * Math.sin(i * 0.8) + 4 * Math.random()), borderColor: '#0AFFD9', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { data: times.map((_, i) => 133 + 6 * Math.sin(i * 0.8 + 1) + 3 * Math.random()), borderColor: '#E74C3C', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+      { data: times.map((_, i) => 22 + 3 * Math.sin(i * 0.5) + 2 * Math.random()), borderColor: '#F1C40F', borderWidth: 2, pointRadius: 0, tension: 0.4 }
+    ]},
+    options: chartOpts
+  });
+  new Chart(document.getElementById('mStepChart'), {
+    type: 'bar',
+    data: { labels: [1,2,3,4,5,6,7,8,9,10].map(i => 'Ш'+i), datasets: [{ data: [1.79,1.84,1.82,1.87,1.81,1.85,1.83,1.88,1.80,1.86], backgroundColor: 'rgba(46,204,113,0.6)', borderRadius: 4 }] },
+    options: { ...chartOpts, scales: { x: chartOpts.scales.x, y: { ...chartOpts.scales.y, min: 1.5, max: 2.1 } } }
+  });
+  new Chart(document.getElementById('mFreqChart'), {
+    type: 'line',
+    data: { labels: Array.from({ length: 20 }, (_, i) => i + 'с'), datasets: [{ data: Array.from({ length: 20 }, (_, i) => 74 + 4 * Math.sin(i * 0.6) + 2 * Math.random()), borderColor: '#0AFFD9', borderWidth: 2, pointRadius: 2, fill: true, backgroundColor: 'rgba(10,255,217,0.08)', tension: 0.4 }] },
+    options: { ...chartOpts, scales: { x: chartOpts.scales.x, y: { ...chartOpts.scales.y, min: 60, max: 90 } } }
+  });
+}
+
+let compareInited = false;
+function initCompare() {
+  if (compareInited) return;
+  compareInited = true;
+  new Chart(document.getElementById('mCompareChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Корпус', 'Колено пр.', 'Колено л.', 'Шаг×10', 'Частота/10'],
+      datasets: [
+        { label: '24.05', data: [22, 145, 133, 18.4, 7.6], backgroundColor: 'rgba(10,255,217,0.6)', borderRadius: 4 },
+        { label: '15.04', data: [26, 148, 136, 17.6, 7.2], backgroundColor: 'rgba(55,138,221,0.52)', borderRadius: 4 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#4A5568', font: { size: 8 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#4A5568', font: { size: 8 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+}
+
+// ── Init ──
+window.addEventListener('load', () => {
+  updateSkel(fp);
+});
+window.addEventListener('resize', () => {
+  updateSkel(fp);
+});
+</script>
+</body>
+</html>
